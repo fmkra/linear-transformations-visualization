@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Matrix, setMatrixValue } from './Matrix'
 
 const fontColor = '#fff'
@@ -7,16 +7,25 @@ const lineWidth = '2px'
 
 type St<T> = [T, React.Dispatch<React.SetStateAction<T>>]
 
-const MatrixInput = <T,>({
-    matrix: [matrix, setMatrix],
-    toText,
-    fromText,
+const useMatrixTextInput = (matrix: St<Matrix>, r: number, c: number) => {
+    const [value, setValue] = useState<string>(matrix[0][r][c].toString());
+    const onChange = (val: string) => {
+        setValue(val)
+        if(val === '' || isNaN(parseFloat(val))) matrix[1]([[1,0],[0,1]])
+        matrix[1](setMatrixValue(matrix[0], r, c, parseFloat(val)))
+    }
+    return [value, onChange] as const
+}
+
+const MatrixInput = ({
+    matrix: [matrix, setMatrix]
 }: {
-    matrix: St<Matrix<T>>,
-    toText: (v: T) => string,
-    fromText: (v: string) => T,
+    matrix: St<Matrix>
 }) => {
-    
+    const [m00, setM00] = useMatrixTextInput([matrix, setMatrix], 0, 0)
+    const [m01, setM01] = useMatrixTextInput([matrix, setMatrix], 0, 1)
+    const [m10, setM10] = useMatrixTextInput([matrix, setMatrix], 1, 0)
+    const [m11, setM11] = useMatrixTextInput([matrix, setMatrix], 1, 1)
 
     return (
         <div style={{
@@ -33,19 +42,21 @@ const MatrixInput = <T,>({
                     borderBottom: `solid ${lineWidth} ${backgroundColor}`,
                     padding: lineWidth,
                     display: 'grid',
-                    gridTemplateColumns: `repeat(${matrix.rows}, 1fr)`,
+                    gridTemplateColumns: `repeat(2, 1fr)`,
                     textAlign: 'center',
                 }}>
-                    {matrix.values.map((row, r) => row.map((value, c) => (
-                        <div style={{
-                            padding: '3px 10px'
-                        }} key={`${r}-${c}`}>
-                            <input type="text" value={toText(value)} onChange={e => setMatrix(setMatrixValue(matrix, r, c, fromText(e.target.value)))} style={{
-                                width: '36px',
-                                textAlign: 'center',
-                            }} />
-                        </div>
-                    ))).flat()}
+                    <div style={{padding: '3px 10px'}}>
+                        <input type="text" value={m00} onChange={e => setM00(e.target.value)} style={{width: '36px',textAlign: 'center'}} />
+                    </div>
+                    <div style={{padding: '3px 10px'}}>
+                        <input type="text" value={m01} onChange={e => setM01(e.target.value)} style={{width: '36px',textAlign: 'center'}} />
+                    </div>
+                    <div style={{padding: '3px 10px'}}>
+                        <input type="text" value={m10} onChange={e => setM10(e.target.value)} style={{width: '36px',textAlign: 'center'}} />
+                    </div>
+                    <div style={{padding: '3px 10px'}}>
+                        <input type="text" value={m11} onChange={e => setM11(e.target.value)} style={{width: '36px',textAlign: 'center'}} />
+                    </div>
                 </div>
             </div>
         </div>

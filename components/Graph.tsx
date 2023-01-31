@@ -1,28 +1,14 @@
-import React, { useRef } from 'react'
+import React from 'react'
 import Sketch from 'react-p5'
 import p5Types from 'p5'
-import { Matrix, transformVector } from './Matrix';
+import { det, inverse, Matrix, transformVector } from './Matrix';
 
 
-const Graph = ({matrix}: {matrix: Matrix<number>}) => {
+const Graph = ({matrix}: {matrix: Matrix}) => {
     const width = 800
     const height = 600
     const scale = 4
     const lineWidth = 2
-
-    const endlessLine = (p5: p5Types, x1: number, y1: number, x2: number, y2: number, sc: number) => {
-        if(x1 == x2 && y1 == y2) {
-            p5.point(x1, y1)
-            return
-        }
-        const scale = Math.max(p5.windowHeight, p5.windowWidth)/sc/2
-        const mag = Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1))
-        const dx = (x2-x1)/mag*scale
-        const dy = (y2-y1)/mag*scale
-        p5.line(x1, y1, x1+dx, y1+dy)
-        p5.line(x1, y1, x1-dx, y1-dy)
-    }
-
 
     const setup = (p5: p5Types, canvasParentRef: Element) => {
 		p5.createCanvas(width, height).parent(canvasParentRef)
@@ -34,30 +20,54 @@ const Graph = ({matrix}: {matrix: Matrix<number>}) => {
         const sc = Math.min(height, width)/scale/2
         p5.scale(sc, -sc)
         p5.stroke(255)
-        const xmax = width/sc/2
-        const ymax = height/sc/2
-        
+        const _xmax = width/sc/2
+        const _ymax = height/sc/2
+        let xmax = _xmax
+        let ymax = _ymax
+        if(Math.abs(det(matrix)) >= 1e-3) {
+            const inv = inverse(matrix)
+            const p1 = transformVector(inv, [-xmax, -ymax])
+            const p2 = transformVector(inv, [xmax, -ymax])
+            const p3 = transformVector(inv, [xmax, ymax])
+            const p4 = transformVector(inv, [-xmax, ymax])
+            xmax = Math.max(Math.abs(p1[0]), Math.abs(p2[0]), Math.abs(p3[0]), Math.abs(p4[0]))
+            ymax = Math.max(Math.abs(p1[1]), Math.abs(p2[1]), Math.abs(p3[1]), Math.abs(p4[1]))
+        }
+        xmax = Math.min(xmax, 100)
+        ymax = Math.min(ymax, 100)
+
         p5.strokeWeight(lineWidth/sc/2)
         p5.stroke(96)
-        for(let y = Math.ceil(-ymax); y <= ymax; y++) {
-            endlessLine(p5, 0, y, 1, y, sc)
+        for(let y = Math.ceil(-_ymax); y <= _ymax; y++) {
+            p5.line(-_xmax, y, _xmax, y)
         }
-        for(let x = Math.ceil(-xmax); x <= xmax; x++) {
-            endlessLine(p5, x, 0, x, 1, sc)
+        for(let x = Math.ceil(-_xmax); x <= _xmax; x++) {
+            p5.line(x, -_ymax, x, _ymax)
         }
-        p5.strokeWeight(lineWidth/sc)
-        p5.stroke(255)
         
-        p5.stroke(35, 148, 235)
         for(let y = Math.ceil(-ymax); y <= ymax; y++) {
-            const [x1, y1] = transformVector(matrix, [0, y])
-            const [x2, y2] = transformVector(matrix, [1, y])
-            endlessLine(p5, x1, y1, x2, y2, sc)
+            if(y == 0) {
+                p5.stroke(255)
+                p5.strokeWeight(lineWidth/sc)
+            } else {
+                p5.stroke(35, 148, 235)
+                p5.strokeWeight(lineWidth/sc/2)
+            }
+            const [x1, y1] = transformVector(matrix, [-xmax, y])
+            const [x2, y2] = transformVector(matrix, [xmax, y])
+            p5.line(x1, y1, x2, y2)
         }
         for(let x = Math.ceil(-xmax); x <= xmax; x++) {
-            const [x1, y1] = transformVector(matrix, [x, 0])
-            const [x2, y2] = transformVector(matrix, [x, 1])
-            endlessLine(p5, x1, y1, x2, y2, sc)
+            if(x == 0) {
+                p5.stroke(255)
+                p5.strokeWeight(lineWidth/sc)
+            } else {
+                p5.stroke(35, 148, 235)
+                p5.strokeWeight(lineWidth/sc/2)
+            }
+            const [x1, y1] = transformVector(matrix, [x, -ymax])
+            const [x2, y2] = transformVector(matrix, [x, ymax])
+            p5.line(x1, y1, x2, y2)
         }
 	}
 

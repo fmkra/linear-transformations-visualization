@@ -1,38 +1,72 @@
-export interface Matrix<T> {
-    rows: number
-    cols: number
-    values: T[][]
+export type Matrix = [ [number, number], [number, number] ]
+
+export type Vector = [number, number]
+
+export const identity = [ [1, 0], [0, 1] ]
+
+export const setMatrixValue = (matrix: Matrix, row: number, col: number, value: number): Matrix => [
+    [ row==0 && col==0 ? value : matrix[0][0], row==0 && col==1 ? value : matrix[0][1]],
+    [ row==1 && col==0 ? value : matrix[1][0], row==1 && col==1 ? value : matrix[1][1]]
+]
+
+export const transformVector = (matrix: Matrix, vector: Vector): Vector => [
+    matrix[0][0] * vector[0] + matrix[0][1] * vector[1],
+    matrix[1][0] * vector[0] + matrix[1][1] * vector[1]
+]
+
+export const det = (matrix: Matrix): number => matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]
+
+export const add = (matrix1: Matrix, matrix2: Matrix): Matrix => [
+    [matrix1[0][0] + matrix2[0][0], matrix1[0][1] + matrix2[0][1]],
+    [matrix1[1][0] + matrix2[1][0], matrix1[1][1] + matrix2[1][1]]
+]
+
+export const scalarMultiply = (matrix: Matrix, scalar: number): Matrix => [
+    [matrix[0][0] * scalar, matrix[0][1] * scalar],
+    [matrix[1][0] * scalar, matrix[1][1] * scalar]
+]
+
+export const inverse = (matrix: Matrix): Matrix => {
+    const det = matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]
+    return [
+        [matrix[1][1] / det, -matrix[0][1] / det],
+        [-matrix[1][0] / det, matrix[0][0] / det]
+    ]
 }
 
-export const createEmptyMatrix = <T>(rows: number, cols: number, value: T): Matrix<T> => ({
-    rows: rows,
-    cols: cols,
-    values: Array(rows).fill(Array(cols).fill(value))
-})
+export const interpolateMatrix = (matrix1: Matrix, matrix2: Matrix, t: number): Matrix => {
+    const lerped = add(scalarMultiply(matrix1, 1 - t), scalarMultiply(matrix2, t))
+    const detLerped = det(lerped)
+    const expectedDet = det(matrix1) * (1 - t) + det(matrix2) * t
+    const scale = Math.sqrt(expectedDet / detLerped)
+    return scalarMultiply(lerped, scale)
+}
 
-export const setMatrixValue = <T>(matrix: Matrix<T>, row: number, col: number, value: T): Matrix<T> => ({
-    rows: matrix.rows,
-    cols: matrix.cols,
-    values: matrix.values.map((R, r) => R.map((val, c) => (r==row && c==col ? value : val)))
-})
+export const eigenValues = (matrix: Matrix): null | [number] | [number, number] => {
+    const m = (matrix[0][0] + matrix[1][1])/2
+    const p = det(matrix)
+    const q = Math.sqrt(m*m - p)
+    if(isNaN(q)) return null
+    if(Math.abs(q) <= 1e-6) return [m]
+    return [m-q,m+q]
+}
 
-export const transformVector = (matrix: Matrix<number>, vector: number[]): number[] => matrix.values.map(row => row.reduce((acc, val, i) => acc + val * vector[i], 0))
+export const ker = (matrix: Matrix): null | Vector | true => {
+    if(Math.abs(det(matrix)) > 1e-6) return null
+    let [a,b,c,d] = [matrix[0][0], matrix[0][1], matrix[1][0], matrix[1][1]]
+    if(a <= 1e-6) [a,b,c,d] = [c,d,a,b]
+    if(a <= 1e-6) {
+        if(b <= 1e-6 && d <= 1e-6) return true // span([1,0],[0,1])
+        return [1,0] // span([1,0])
+    }
+    c = 0
+    d -= a * d / a
+    if(d <= 1e-6) return [a,-b] // span([a,-b])
+    return null // {0}
+}
 
-export const add = (matrix1: Matrix<number>, matrix2: Matrix<number>): Matrix<number> => ({
-    rows: matrix1.rows,
-    cols: matrix1.cols,
-    values: matrix1.values.map((row, i) => row.map((val, j) => val + matrix2.values[i][j]))
-})
-
-export const multiply = (matrix: Matrix<number>, scalar: number): Matrix<number> => ({
-    rows: matrix.rows,
-    cols: matrix.cols,
-    values: matrix.values.map(row => row.map(val => val * scalar))
-})
-
-export const identity = (size: number): Matrix<number> => ({
-    rows: size,
-    cols: size,
-    values: Array(size).fill(Array(size).fill(0)).map((row, i) => row.map((val:any, j:any) => i==j ? 1 : 0))
-})
-
+export const eigenVectors = (matrix: Matrix, eigenValue: number): null | Vector | true => {
+    const m: Matrix = [ [matrix[0][0] - eigenValue, matrix[0][1]], [matrix[1][0], matrix[1][1] - eigenValue] ]
+    console.log(m)
+    return ker(m)
+}
