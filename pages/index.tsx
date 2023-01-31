@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { eigenValues, eigenVectors, interpolateMatrix, Matrix } from '../components/Matrix'
+import { eigenValues, eigenVectors, interpolateMatrix, Matrix, Vector } from '../components/Matrix'
 import MatrixInput from '../components/MatrixInput'
 import dynamic from 'next/dynamic'
 
@@ -7,6 +7,8 @@ const Graph = dynamic(() => import('../components/Graph'), {ssr: false})
 
 export default function Home() {
     const [matrix, setMatrix] = useState<Matrix>([[3,1],[0,2]])
+    const evalues = eigenValues(matrix)
+    const evectors = (evalues?.map(v => eigenVectors(matrix, v)).filter(x => x!==true && x!==null) ?? []) as Vector[]
 
     const [time, setTime] = useState(0)
 
@@ -16,8 +18,19 @@ export default function Home() {
         <>
             <MatrixInput matrix={[matrix, setMatrix]}  />
             <input type="range" value={time} onChange={e => setTime(parseFloat(e.target.value))} min={0} max={1} step={0.01} />
-            <div>{JSON.stringify(eigenVectors(matrix, 2))}</div>
-            <Graph matrix={animatedMatrix} />
+            <div>
+                {evalues === null ? 'No eigenvalues' : <>
+                    Eeigenvalues:
+                    <br />
+                    {evalues.map((v,i) => {
+                        const evectors = eigenVectors(matrix, v)
+                        if(evectors === null) return null
+                        if(evectors === true) return <div key={i}>{v} with vectors from R^2</div>
+                        return <div key={i}>{v} with vectors {`[${evectors[0]}, ${evectors[1]}]`}</div>
+                    })}
+                </>}
+            </div>
+            <Graph matrix={animatedMatrix} vectors={evectors} />
         </>
     )
 }

@@ -1,10 +1,10 @@
 import React from 'react'
 import Sketch from 'react-p5'
 import p5Types from 'p5'
-import { det, inverse, Matrix, transformVector } from './Matrix';
+import { det, inverse, Matrix, Vector, transformVector } from './Matrix';
 
 
-const Graph = ({matrix}: {matrix: Matrix}) => {
+const Graph = ({matrix, vectors}: {matrix: Matrix, vectors: Vector[]}) => {
     const width = 800
     const height = 600
     const scale = 4
@@ -36,6 +36,7 @@ const Graph = ({matrix}: {matrix: Matrix}) => {
         xmax = Math.min(xmax, 100)
         ymax = Math.min(ymax, 100)
 
+        // grid before transformation
         p5.strokeWeight(lineWidth/sc/2)
         p5.stroke(96)
         for(let y = Math.ceil(-_ymax); y <= _ymax; y++) {
@@ -45,6 +46,7 @@ const Graph = ({matrix}: {matrix: Matrix}) => {
             p5.line(x, -_ymax, x, _ymax)
         }
         
+        // grid after transformation
         for(let y = Math.ceil(-ymax); y <= ymax; y++) {
             if(y == 0) {
                 p5.stroke(255)
@@ -67,6 +69,15 @@ const Graph = ({matrix}: {matrix: Matrix}) => {
             }
             const [x1, y1] = transformVector(matrix, [x, -ymax])
             const [x2, y2] = transformVector(matrix, [x, ymax])
+            p5.line(x1, y1, x2, y2)
+        }
+
+        // vectors after transformation
+        p5.strokeWeight(lineWidth/sc)
+        p5.stroke(255, 0, 0)
+        for(const v of vectors) {
+            const [x1, y1] = transformVector(matrix, [0, 0])
+            const [x2, y2] = transformVector(matrix, v)
             p5.line(x1, y1, x2, y2)
         }
 	}

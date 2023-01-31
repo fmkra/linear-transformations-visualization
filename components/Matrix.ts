@@ -54,19 +54,24 @@ export const eigenValues = (matrix: Matrix): null | [number] | [number, number] 
 export const ker = (matrix: Matrix): null | Vector | true => {
     if(Math.abs(det(matrix)) > 1e-6) return null
     let [a,b,c,d] = [matrix[0][0], matrix[0][1], matrix[1][0], matrix[1][1]]
-    if(a <= 1e-6) [a,b,c,d] = [c,d,a,b]
-    if(a <= 1e-6) {
-        if(b <= 1e-6 && d <= 1e-6) return true // span([1,0],[0,1])
+    if(Math.abs(a) <= 1e-6) [a,b,c,d] = [c,d,a,b]
+    if(Math.abs(a) <= 1e-6) {
+        // [ 0, b ]
+        // [ 0, d ]
+        if(Math.abs(b) <= 1e-6 && Math.abs(d) <= 1e-6) return true // span([1,0],[0,1])
         return [1,0] // span([1,0])
     }
     c = 0
-    d -= a * d / a
-    if(d <= 1e-6) return [a,-b] // span([a,-b])
+    d -= b * d / a
+    // [ a, b ] a != 0
+    // [ 0, d ]
+    if(Math.abs(d) <= 1e-6) return [-b,a] // span([-b,a])
+    a -= b/d * c
+    b = 0
     return null // {0}
 }
 
 export const eigenVectors = (matrix: Matrix, eigenValue: number): null | Vector | true => {
     const m: Matrix = [ [matrix[0][0] - eigenValue, matrix[0][1]], [matrix[1][0], matrix[1][1] - eigenValue] ]
-    console.log(m)
     return ker(m)
 }
