@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Matrix, setMatrixValue } from './Matrix'
 
 const fontColor = '#fff'
-const backgroundColor = '#000'
+const backgroundColor = '#282828'
 const lineWidth = '2px'
 
 type St<T> = [T, React.Dispatch<React.SetStateAction<T>>]

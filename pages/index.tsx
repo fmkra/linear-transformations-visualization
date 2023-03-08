@@ -28,9 +28,22 @@ export default function Home() {
 
     return (
         <>
-            <div style={{ position: 'fixed', zIndex: 2 }}>
+            <div
+                style={{
+                    position: 'fixed',
+                    zIndex: 2,
+                    backgroundColor: '#282828',
+                    boxShadow: '0 0 10px 5px #111',
+                    padding: '10px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '5px',
+                }}
+            >
                 <MatrixInput matrix={[matrix, setMatrix]} />
-                <button onClick={animate}>Animate</button>
+                <button onClick={animate} style={{ padding: '5px' }}>
+                    Animate
+                </button>
 
                 {evalues === null ? (
                     'No eigenvalues'
