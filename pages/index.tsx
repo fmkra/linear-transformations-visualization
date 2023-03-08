@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { eigenValues, eigenVectors, interpolateMatrix, Matrix, Vector } from '../components/Matrix'
 import MatrixInput from '../components/MatrixInput'
 import dynamic from 'next/dynamic'
+import useTime from '../components/time'
 
 const Graph = dynamic(() => import('../components/Graph'), { ssr: false })
 
@@ -14,7 +15,7 @@ export default function Home() {
     const evectors = (evalues?.map((v) => eigenVectors(matrix, v)).filter((x) => x !== true && x !== null) ??
         []) as Vector[]
 
-    const [time, setTime] = useState(0)
+    const [time, animate] = useTime()
 
     const animatedMatrix = interpolateMatrix(
         [
@@ -29,14 +30,8 @@ export default function Home() {
         <>
             <div style={{ position: 'fixed', zIndex: 2 }}>
                 <MatrixInput matrix={[matrix, setMatrix]} />
-                <input
-                    type="range"
-                    value={time}
-                    onChange={(e) => setTime(parseFloat(e.target.value))}
-                    min={0}
-                    max={1}
-                    step={0.01}
-                />
+                <button onClick={animate}>Animate</button>
+
                 {evalues === null ? (
                     'No eigenvalues'
                 ) : (
