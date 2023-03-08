@@ -13,6 +13,29 @@ const Graph = ({ matrix, vectors }: { matrix: Matrix; vectors: Vector[] }) => {
         p5.createCanvas(width, height).parent(canvasParentRef)
     }
 
+    const drawArrow = (p5: p5Types, x1: number, y1: number, x2: number, y2: number, len: number) => {
+        const angle = p5.radians(30)
+        const sin = Math.sin(angle)
+        const cos = Math.cos(angle)
+        p5.line(x1, y1, x2, y2)
+        const dxl = x1 - x2
+        const dyl = y1 - y2
+        const rdxl = cos * dxl - sin * dyl
+        const rdyl = sin * dxl + cos * dyl
+        const ll = len / Math.sqrt(rdxl * rdxl + rdyl * rdyl)
+        const dxr = x1 - x2
+        const dyr = y1 - y2
+        const rdxr = cos * dxr + sin * dyr
+        const rdyr = -sin * dxr + cos * dyr
+        const lr = len / Math.sqrt(rdxr * rdxr + rdyr * rdyr)
+
+        p5.beginShape()
+        p5.vertex(x2, y2)
+        p5.vertex(x2 + rdxl * ll, y2 + rdyl * ll)
+        p5.vertex(x2 + rdxr * lr, y2 + rdyr * lr)
+        p5.endShape(p5.CLOSE)
+    }
+
     const draw = (p5: p5Types) => {
         const width = p5.width
         const height = p5.height
@@ -76,10 +99,11 @@ const Graph = ({ matrix, vectors }: { matrix: Matrix; vectors: Vector[] }) => {
         // vectors after transformation
         p5.strokeWeight(lineWidth / sc)
         p5.stroke(255, 0, 0)
+        p5.fill(255, 0, 0)
         for (const v of vectors) {
             const [x1, y1] = transformVector(matrix, [0, 0])
             const [x2, y2] = transformVector(matrix, v)
-            p5.line(x1, y1, x2, y2)
+            drawArrow(p5, x1, y1, x2, y2, 0.2)
         }
     }
 
