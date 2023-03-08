@@ -44,7 +44,20 @@ export default function Home() {
                 <button onClick={animate} style={{ padding: '5px' }}>
                     Animate
                 </button>
-
+            </div>
+            <div
+                style={{
+                    position: 'fixed',
+                    zIndex: 2,
+                    backgroundColor: '#282828',
+                    boxShadow: '0 0 10px 5px #111',
+                    padding: '10px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '5px',
+                    right: 0,
+                }}
+            >
                 {evalues === null ? (
                     'No eigenvalues'
                 ) : (
